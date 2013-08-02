@@ -9,3 +9,21 @@
   font-weight: bold;
   margin-top: 50px;
 }
+
+.calendar .month-name {
+  text-align: center;
+}
+
+.calendar table {
+  width: 100%;
+}
+
+.calendar th, table.calendar td {
+  border: 1px solid black;
+  padding: 0.5em;
+}
+
+.calendar td {
+  vertical-align: top;
+  height: 8em;
+}

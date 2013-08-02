@@ -1,7 +1,7 @@
 <_within file="application.html">
-  <div template="calendar" field="id:id">
-    <h1 field="content:month">January</h1>
-    <table>
+  <div template="calendar" class="calendar" field="id:id">
+    <h1 field="content:month" class="month-name">January</h1>
+    <table class="calendar">
       <thead>
         <tr>
           <th>Sunday</th>
@@ -17,6 +17,7 @@
         <tr template="week" field="id:id">
           <td template="day">
             <span field="content:date">30</span>
+            <div field="content:meal">Borscht</div>
           </td>
           <td>1</td>
           <td>2</td>

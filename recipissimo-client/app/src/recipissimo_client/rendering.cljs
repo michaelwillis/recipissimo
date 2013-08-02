@@ -25,19 +25,19 @@
   (templates/update-t renderer path {:month (:month new-value)}))
 
 (def render-week
-  (render-template :week
-                   :dom-selector-fn (fn [_ _] (dom/by-id "calendar-table-body"))))
+  (render-template
+   :week :dom-selector-fn (fn [_ _] (dom/by-id "calendar-table-body"))))
 
 (def render-day
-  (render-template :day
-                   :initial-value-fn (fn [[_ path]] {:date (last path)})))
+  (render-template
+   :day :initial-value-fn (fn [[_ path]] {:date (last path)})))
+
+(defn update-day [renderer [_ path _ new-value] input-queue]
+  (templates/update-t renderer path {:meal new-value}))
 
 (defn render-config [] 
   [[:node-create [:calendar] (render-template :calendar)]
    [:value [:calendar] update-calendar]
    [:node-create [:calendar :weeks :*] render-week]
    [:node-create [:calendar :weeks :* :*] render-day]
-   (comment 
-           [:node-destroy [:main] d/default-destroy]
-           [:node-create [:main :calendar] ]
-           [:value [:main :calendar] (render-template :calendar (fn [] {}) )])])
+   [:value [:calendar :weeks :* :*] update-day]])

@@ -16,7 +16,7 @@
 (comment (defn random-meals []
    (repeatedly )))
 
-(defn calendar-init [_ _] {:month "September"})
+(defn calendar-init [_ _] {:month "July"})
 
 (defn week-init [_ _] {}) 
 
