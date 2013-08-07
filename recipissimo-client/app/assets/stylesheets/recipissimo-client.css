@@ -1,7 +1,7 @@
 /* CSS for recipissimo-client */
 
-#content {
-  margin-top: 30px;
+.container {
+  position: relative;
 }
 
 .message {
@@ -10,20 +10,41 @@
   margin-top: 50px;
 }
 
-.calendar .month-name {
+.search-widget .search-query {
+  position: absolute;
+  top: 1em;
+  right: 0;
+}
+
+.search-widget ul {
+  height: 6em;
+  list-style:none;
+}
+
+.search-widget li {
+  float: left;
+  cursor: move;
+  margin: 4px;
+  padding: 0 8px 0 16px;
+  border-radius: 8px;
+  transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;
+  background:#e4ebf0 url("/handle.png") no-repeat scroll 0 0;
+}
+
+.calendar {
+  clear: both;
+}
+
+.calendar .month-name, .calendar th {
   text-align: center;
 }
 
-.calendar table {
-  width: 100%;
-}
-
-.calendar th, table.calendar td {
-  border: 1px solid black;
-  padding: 0.5em;
-}
-
 .calendar td {
+  width: 14%;
   vertical-align: top;
-  height: 8em;
+  height: 5em;
+}
+
+.calendar td .highlight {
+  background-color: yellow;
 }

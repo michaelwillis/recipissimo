@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>recipissimo-client</title>
+    <title>Recipissimo</title>
     
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
@@ -26,6 +26,7 @@
   <body>
 
     <div class="container">
+      <h1>Recipissimo</h1>
 
       <div id="content"></div>
 
@@ -35,7 +36,12 @@
 
     </div> <!-- /container -->
 
-    <script id="script-driver"></script>
+    <script src="/jquery-1.9.1.js"></script>
+    <script src="/jquery-ui-1.10.3.custom.min.js"></script>
+    <script>
+      jQuery.noConflict();
+    </script>
+    <script id="script-driver" src="/recipissimo.js"></script>
 
   </body>
 </html>

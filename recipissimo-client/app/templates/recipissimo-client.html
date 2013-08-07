@@ -1,7 +1,16 @@
 <_within file="application.html">
+  <div template="search" class="search-widget" field="id:id">
+    <input id="recipe-search-text" type="text" class="input-large search-query"
+           placeholder="Search for recipes" />
+    <ul id="search-results" class="search-results">
+      <li>Aloo Masala</li>
+      <li>Chicken Tikka Masala</li>
+      <li>Paneer Masala</li>
+    </ul>
+  </div>
   <div template="calendar" class="calendar" field="id:id">
-    <h1 field="content:month" class="month-name">January</h1>
-    <table class="calendar">
+    <h2 field="content:month" class="month-name">January</h1>
+    <table class="table table-bordered calendar">
       <thead>
         <tr>
           <th>Sunday</th>
@@ -15,7 +24,7 @@
       </thead>
       <tbody id="calendar-table-body">
         <tr template="week" field="id:id">
-          <td template="day">
+          <td template="day" field="id:id">
             <span field="content:date">30</span>
             <div field="content:meal">Borscht</div>
           </td>
