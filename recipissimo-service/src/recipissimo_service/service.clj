@@ -1,24 +1,23 @@
 (ns recipissimo-service.service
-    (:require [io.pedestal.service.http :as bootstrap]
-              [io.pedestal.service.http.route :as route]
-              [io.pedestal.service.http.sse :as sse]
-              [io.pedestal.service.http.body-params :as body-params]
-              [io.pedestal.service.http.ring-middlewares :as middlewares]
-              [io.pedestal.service.http.route.definition :refer [defroutes]]
-              [io.pedestal.service.interceptor :refer [definterceptor]]
-              [io.pedestal.service.log :as log]
-              [ring.middleware.session.cookie :as cookie]
-              [ring.util.response :as ring-resp]))
-
-(defn about-page
-  [request]
-  (ring-resp/response (format "Clojure %s" (clojure-version))))
+  (:require [datomic.api :as datomic]
+            [io.pedestal.service.http :as bootstrap]
+            [io.pedestal.service.http.route :as route]
+            [io.pedestal.service.http.sse :as sse]
+            [io.pedestal.service.http.body-params :as body-params]
+            [io.pedestal.service.http.ring-middlewares :as middlewares]
+            [io.pedestal.service.http.route.definition :refer [defroutes]]
+            [io.pedestal.service.interceptor :refer [definterceptor]]
+            [io.pedestal.service.log :as log]
+            [ring.middleware.session.cookie :as cookie]
+            [ring.util.response :as ring-resp]))
 
 (defn home-page
   [request]
-  (ring-resp/response "Hello World!"))
+  (ring-resp/response "Recipissimo Service"))
 
 (def ^:private streaming-contexts (atom {}))
+
+(def conn (datomic/connect "datomic:free://localhost:4334/recipissimo"))
 
 (defn- session-from-context
   "Extract the session id from the streaming context."
@@ -41,9 +40,15 @@
   [session-id event-name event-data]
   (when-let [streaming-context (get @streaming-contexts session-id)]
     (try
-      (sse/send-event streaming-context event-name event-data)
+      (sse/send-event streaming-context event-name (pr-str event-data))
       (catch java.io.IOException ioe
         (clean-up streaming-context)))))
+
+(defn- notify-all
+  "Send event-data to all connected channels."
+  [event-name event-data]
+  (doseq [session-id (keys @streaming-contexts)]
+    (notify session-id event-name event-data)))
 
 (defn- notify-all-others
   "Send event-data to all connected channels except for the given session-id."
@@ -59,6 +64,17 @@
 (defn- session-id [] (.toString (java.util.UUID/randomUUID)))
 
 (declare url-for)
+
+(def handlers
+  {:search
+   (fn [msg-data session-id]
+     (let [query (concat '[:find ?n :where]
+                         (map (fn [term] `[(~'fulltext ~'$ ~':recipe/name ~term)
+                                          [[~'?i ~'?n]]])
+                              (:search-terms msg-data)))
+                   results (datomic/q query (datomic/db conn))]
+               (notify-all "search-results" results)))
+   })
 
 (defn subscribe
   "Assign a session cookie to this request if one does not
@@ -80,28 +96,18 @@
             :request request
             :msg-data msg-data)
   (let [session-id (or (session-from-request request)
-                       (session-id))]
-    (notify-all-others session-id
-                       "msg"
-                       (pr-str (update-in msg-data
-                                          [:io.pedestal.app.messages/topic]
-                                          conj
-                                          (subs session-id 0 8)))))
+                       (session-id))
+        type (:io.pedestal.app.messages/type msg-data)
+        handler (handlers type)]
+    (handler msg-data session-id))
   (ring-resp/response ""))
 
 (defroutes routes
   [[["/" {:get home-page}
      ;; Set default interceptors for /about and any other paths under /
      ^:interceptors [(body-params/body-params) bootstrap/html-body session-interceptor]
-     ["/about" {:get about-page}]
      ["/msgs" {:get subscribe :post publish}
       ["/events" {:get [::events (sse/start-event-stream store-streaming-context)]}]]]]])
-
-(comment (defroutes routes
-           [[["/" {:get home-page}
-              ;; Set default interceptors for /about and any other paths under /
-              ^:interceptors [(body-params/body-params) bootstrap/html-body]
-              ["/about" {:get about-page}]]]]))
 
 ;; You can use this fn or a per-request fn via io.pedestal.service.http.route/url-for
 (def url-for (route/url-for-routes routes))
