@@ -10,18 +10,18 @@
   margin-top: 50px;
 }
 
-.search-widget .search-query {
+#search-widget .search-query {
   position: absolute;
   top: 1em;
   right: 0;
 }
 
-.search-widget ul {
+#search-widget ul {
   height: 6em;
   list-style:none;
 }
 
-.search-widget li {
+#search-widget li {
   float: left;
   cursor: move;
   margin: 4px;
@@ -31,20 +31,20 @@
   background:#e4ebf0 url("/handle.png") no-repeat scroll 0 0;
 }
 
-.calendar {
+#calendar {
   clear: both;
 }
 
-.calendar .month-name, .calendar th {
+#calendar th {
   text-align: center;
 }
 
-.calendar td {
+#calendar td {
   width: 14%;
   vertical-align: top;
   height: 5em;
 }
 
-.calendar td .highlight {
+#calendar td .highlight {
   background-color: yellow;
 }

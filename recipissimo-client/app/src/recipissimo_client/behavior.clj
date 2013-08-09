@@ -2,24 +2,24 @@
     (:require [io.pedestal.app :as app]
               [io.pedestal.app.messages :as msg]))
 
-(defn calendar-init [_ _] {:month "July"})
+(defn init-planner [_]
+  [[:node-create [:planner] :map]])
 
-(defn week-init [_ _] {}) 
+(defn update-search-terms [_ message]
+  (:search-terms message))
 
-(defn day-init [_ _] "")
+(defn update-search-results [_ message]
+  (:results message))
 
-(defn search-init [_ _] {})
-
-(defn update-search-results [_ message] (:results message))
+(defn publish-search-terms [[search-terms]]
+    [{:type :search :search-terms search-terms}])
 
 (def recipissimo-app
   {:version 2
-   :transform [[:init [:calendar] calendar-init]
-               [:init [:calendar :weeks :*] week-init]
-               [:init [:calendar :weeks :* :*] day-init]
-               [:init [:search] search-init]
-               [:update [:search :results] update-search-results]]
-   :emit [[#{[:calendar] [:calendar :weeks] [:calendar :weeks :* :*]
-             [:search] [:search :results]} (app/default-emitter [])]]
-})
+   :transform [[:init [:planner] planner-init]
+               [:update [:planner :search-terms] update-search-terms]
+               [:update [:planner :search] update-search-results]]
+   :effect #{[#{[:planner :search-terms]} publish-search-terms :vals]}
+   :emit [{:init init-planner}
+          [#{[:planner :search]} (app/default-emitter [])]]})
 

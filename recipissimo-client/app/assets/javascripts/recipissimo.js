@@ -1,3 +1,16 @@
+var initSearchBox = function(callback) {
+    var searchTimeout = null;
+    jQuery("#recipe-search-text").on("keypress", function() {
+        if (searchTimeout != null) {
+            clearTimeout(searchTimeout);
+        }
+
+        searchTimeout = setTimeout(function() {
+            callback(jQuery("#recipe-search-text").val());
+        }, 500);
+    });
+}
+
 var clearSearchResults = function() {
     jQuery("#search-results").empty();
 }

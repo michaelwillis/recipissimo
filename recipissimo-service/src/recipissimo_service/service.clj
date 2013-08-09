@@ -80,10 +80,12 @@
                          (map (fn [term] `[(~'fulltext ~'$ ~':recipe/name ~term)
                                           [[~'?recipe ~'?name]]])
                               (:search-terms msg-data)))
-           results (reduce (fn [acc [id name url]]
-                             (conj acc {:id id :name name :url (str url)}))
-                           [] (datomic/q query (db)))]
-       (notify-all "msg" results)))
+           results (->> (datomic/q query (db))
+                        (map (fn [[id name url]] {:id id :name name :url (str url)}))
+                        (take 20)
+                        (vec))]
+       (notify-all "msg" {:type :search-results
+                          :search-results results})))
    })
 
 (defn subscribe
@@ -109,8 +111,8 @@
             :msg-data msg-data)
   (let [session-id (or (session-from-request request)
                        (session-id))
-        type (:io.pedestal.app.messages/type msg-data)
-        handler (handlers type)]
+        handler (handlers (:type msg-data))]
+    (notify-all "effect" { :session-id session-id :msg msg-data})
     (handler msg-data session-id))
   (ring-resp/response ""))
 
