@@ -21,7 +21,8 @@
             ;; the templates.
             :triggers {:html [#"recipissimo_client/rendering.js"]}}
     ;; General application level configuration
-    :application {;; The directory where all generated JavaScript for
+    :application {:api-server {:host "localhost" :port 8080 :log-fn nil}
+                  ;; The directory where all generated JavaScript for
                   ;; this application will be written.
                   :generated-javascript "generated-js"
                   ;; The default template to use when creating host
@@ -86,7 +87,8 @@
                             :out-file "recipissimo-client-dev.js"
                             :main 'recipissimo_client.start
                             :logging? true
-                            :order 3}
+                            :order 3
+                            :use-api-server? true}
               :fresh {:uri "/fresh.html"
                       :name "Fresh"
                       :out-file "fresh.js"
@@ -99,4 +101,5 @@
                            :optimizations :advanced
                            :out-file "recipissimo-client.js"
                            :main 'recipissimo_client.start
-                           :order 5}}}})
+                           :order 5
+                           :use-api-server? true}}}})

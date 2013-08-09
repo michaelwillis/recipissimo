@@ -5,7 +5,8 @@
             [io.pedestal.app.render :as render]
             [io.pedestal.app.messages :as msg]
             [recipissimo-client.behavior :as behavior]
-            [recipissimo-client.rendering :as rendering]))
+            [recipissimo-client.rendering :as rendering]
+            [recipissimo-client.services :as services]))
 
 (defn create-app [render-config]
   (let [app (app/build behavior/recipissimo-app)
@@ -23,4 +24,8 @@
     {:app app :app-model app-model}))
 
 (defn ^:export main []
-  (create-app (rendering/render-config)))
+  (let [app (create-app (rendering/render-config))
+        services (services/->Services (:app app))]
+    (app/consume-effects (:app app) services/services-fn)
+    (p/start services)
+    app))

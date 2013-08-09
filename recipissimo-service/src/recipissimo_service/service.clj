@@ -17,7 +17,12 @@
 
 (def ^:private streaming-contexts (atom {}))
 
-(def conn (datomic/connect "datomic:free://localhost:4334/recipissimo"))
+(def ^:private db-conn (atom nil))
+
+(defn db []
+  (when (nil? @db-conn)
+    (reset! db-conn (datomic/connect "datomic:free://localhost:4334/recipissimo")))
+  (datomic/db @db-conn))
 
 (defn- session-from-context
   "Extract the session id from the streaming context."
@@ -59,7 +64,8 @@
 
 (defn- store-streaming-context [streaming-context]
   (let [session-id (session-from-context streaming-context)]
-    (swap! streaming-contexts assoc session-id streaming-context)))
+    (swap! streaming-contexts assoc session-id streaming-context)
+    (notify-all "sessionids" (keys @streaming-contexts))))
 
 (defn- session-id [] (.toString (java.util.UUID/randomUUID)))
 
@@ -68,21 +74,27 @@
 (def handlers
   {:search
    (fn [msg-data session-id]
-     (let [query (concat '[:find ?n :where]
+     (let [query (concat '[:find ?recipe ?name ?url
+                           :where [?recipe :recipe/name ?name]
+                           [?recipe :recipe/url ?url]]
                          (map (fn [term] `[(~'fulltext ~'$ ~':recipe/name ~term)
-                                          [[~'?i ~'?n]]])
+                                          [[~'?recipe ~'?name]]])
                               (:search-terms msg-data)))
-                   results (datomic/q query (datomic/db conn))]
-               (notify-all "search-results" results)))
+           results (reduce (fn [acc [id name url]]
+                             (conj acc {:id id :name name :url (str url)}))
+                           [] (datomic/q query (db)))]
+       (notify-all "msg" results)))
    })
 
 (defn subscribe
   "Assign a session cookie to this request if one does not
   exist. Redirect to the events channel."
   [request]
+  (notify-all "new-subscriber" {:request request})
   (let [session-id (or (session-from-request request)
                        (session-id))
         cookie {:client-id {:value session-id :path "/"}}]
+    (notify-all "vars" { :session-id session-id :cookie cookie})
     (-> (ring-resp/redirect (url-for ::events))
         (update-in [:cookies] merge cookie))))
 
