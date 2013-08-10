@@ -20,15 +20,24 @@ var addSearchResult = function(recipeId, name, url) {
         jQuery("<li>")
             .draggable({revert:true})
             .data("recipe-id", recipeId)
-            .append(jQuery("<a>").attr("href", url).text(name)));
+            .append(jQuery("<a>").attr("href", url).attr("target", "_blank").text(name)));
 }
 
-var makeCalendarDayDroppable = function(element) {
-    jQuery(element).droppable({
-        hoverClass: "highlight",
-        tolerance: "pointer",
-        drop: function(event, ui) {
-            alert(ui.draggable.data("recipe-id"));
-        }
-    });
+var createCalendarRow = function() {
+    var tr = jQuery("<tr>");
+    jQuery("#calendar").append(tr);
+    return tr;
 }
+
+var createCalendarDay = function(tr, year, month, day, text) {
+    tr.append(
+        jQuery("<td>").text(text).droppable({
+            hoverClass: "highlight",
+            tolerance: "pointer",
+            drop: function(event, ui) {
+                alert(ui.draggable.data("recipe-id"));
+            }
+        })
+    );
+}
+

@@ -35,10 +35,6 @@
   clear: both;
 }
 
-#calendar th {
-  text-align: center;
-}
-
 #calendar td {
   width: 14%;
   vertical-align: top;

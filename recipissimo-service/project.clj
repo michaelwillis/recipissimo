@@ -14,6 +14,7 @@
                  [org.slf4j/jcl-over-slf4j "1.7.2"]
                  [org.slf4j/log4j-over-slf4j "1.7.2"]
 
+                 [clj-time "0.5.1"]
                  [com.datomic/datomic-free "0.8.4122"]]
   :profiles {:dev {:source-paths ["dev"]}}
   :min-lein-version "2.0.0"

@@ -1,5 +1,8 @@
 (ns recipissimo-service.service
   (:require [datomic.api :as datomic]
+            [clj-time.core :refer [plus days year month day]]
+            [clj-time.local :refer [local-now]]
+            [clj-time.format :refer [formatter]]
             [io.pedestal.service.http :as bootstrap]
             [io.pedestal.service.http.route :as route]
             [io.pedestal.service.http.sse :as sse]
@@ -82,10 +85,17 @@
                               (:search-terms msg-data)))
            results (->> (datomic/q query (db))
                         (map (fn [[id name url]] {:id id :name name :url (str url)}))
-                        (take 20)
+                        (take 15)
                         (vec))]
-       (notify-all "msg" {:type :search-results
-                          :search-results results})))
+       (notify-all "msg" {:type :search-results :value results})))
+   :next-n-days
+   (fn [msg-data session-id]
+     (let [now (local-now)
+           dates (for [delta (range (:n-days msg-data))]
+                   (let [date (plus now (days delta))]
+                     [(year date) (month date) (day date)
+                      (.print (formatter "E, d MMM y") date)]))]
+       (notify-all "msg" {:type :next-n-days :value dates})))
    })
 
 (defn subscribe

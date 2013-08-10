@@ -14,16 +14,6 @@
         app-model (render/consume-app-model app render-fn)
         weeks (partition 7 (concat [30] (range 1 32) (range 1 4)))]
     (app/begin app)
-    (comment
-
-      (p/put-message (:input app) {msg/type :init msg/topic [:planner]})
-      (p/put-message (:input app) {msg/type :init msg/topic [:search :results]})
-      (p/put-message (:input app) {msg/type :init msg/topic [:calendar]})
-      (p/put-message (:input app) {msg/type :init msg/topic [:calendar :weeks]})
-      (doseq [week (map-indexed #(vector %1 %2) weeks)]
-        (p/put-message (:input app) {msg/type :init msg/topic [:calendar :weeks (first week)]})
-        (doseq [day (second week)]
-          (p/put-message (:input app) {msg/type :init msg/topic [:calendar :weeks (first week) day]}))))
     {:app app :app-model app-model}))
 
 (defn ^:export main []

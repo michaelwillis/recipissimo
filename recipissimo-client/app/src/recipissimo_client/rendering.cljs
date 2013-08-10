@@ -16,17 +16,22 @@
   (doseq [{:keys [ id name url]} new-value]
     (js/addSearchResult id name url)))
 
-(defn render-planner [renderer [_ path _] input-queue]
-  (let [template (templates :planner)]
-    (dom/append! (dom/by-id "content") (template {})))
-  (js/initSearchBox (fn [val]
-                      (let [search-terms (string/split val #"\s+")
-                            message {msg/type :update
-                                     msg/topic [:planner :search-terms]
-                                     :search-terms search-terms}]
+(defn update-dates [renderer [_ path _ new-value] input-queue]
+  (let [rows (apply (partial map list) (partition 7 new-value))]
+    (doseq [row rows]
+      (let [tr (js/createCalendarRow)]
+        (doseq [[y m d t] row]
+          (js/createCalendarDay tr y m d t))))))
 
-                        (p/put-message input-queue message)))))
+(defn render-planner [renderer [_ path _] input-queue]
+  (let [template (templates :planner)
+        swap (fn [t v] (p/put-message input-queue {msg/type :swap msg/topic t :value v}))]
+    (dom/append! (dom/by-id "content") (template {}))
+    (js/setTimeout (fn [] (swap [:planner :next-n-days] 14)) 1000)
+    (js/initSearchBox
+     (fn [value] (swap [:planner :search-terms] (string/split value #"\s+"))))))
 
 (defn render-config [] 
   [[:node-create [:planner] render-planner]
-   [:value [:planner :search] update-search-results]])
+   [:value [:planner :search] update-search-results]
+   [:value [:planner :dates] update-dates]])
