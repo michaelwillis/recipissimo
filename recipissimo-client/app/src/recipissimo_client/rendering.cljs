@@ -11,18 +11,6 @@
 
 (def templates (identity (html-templates/recipissimo-client-templates)))
 
-(defn update-search-results [renderer [_ path _ new-value] input-queue]
-  (js/clearSearchResults)
-  (doseq [{:keys [ id name url]} new-value]
-    (js/addSearchResult id name url)))
-
-(defn update-dates [renderer [_ path _ new-value] input-queue]
-  (let [rows (apply (partial map list) (partition 7 new-value))]
-    (doseq [row rows]
-      (let [tr (js/createCalendarRow)]
-        (doseq [[y m d t] row]
-          (js/createCalendarDay tr y m d t))))))
-
 (defn render-planner [renderer [_ path _] input-queue]
   (let [template (templates :planner)
         swap (fn [t v] (p/put-message input-queue {msg/type :swap msg/topic t :value v}))]
@@ -31,7 +19,23 @@
     (js/initSearchBox
      (fn [value] (swap [:planner :search-terms] (string/split value #"\s+"))))))
 
+(defn update-search-results [renderer [_ path _ new-value] input-queue]
+  (js/clearSearchResults)
+  (doseq [{:keys [ id name url]} new-value]
+    (js/addSearchResult id name url)))
+
+(defn render-calendar [renderer [_ path _ new-value] input-queue]
+  (doseq [row (->> new-value keys sort (partition 7) (apply (partial map list)))]
+    (let [tr (js/createCalendarRow)]
+      (doseq [date row]
+        (let [[y m d] date
+              [text recipes] (new-value date)
+              callback (fn [rid] (js/alert (str "Added recipe " rid " to " y " " m " " d)))
+              ul (js/createCalendarDay tr text callback)]
+          (doseq [{:keys [id name url]} recipes]
+            (js/addRecipeToCalendar ul id name url)))))))
+
 (defn render-config [] 
   [[:node-create [:planner] render-planner]
-   [:value [:planner :search] update-search-results]
-   [:value [:planner :dates] update-dates]])
+   [:value [:planner :dates] render-calendar]
+   [:value [:planner :search] update-search-results]])

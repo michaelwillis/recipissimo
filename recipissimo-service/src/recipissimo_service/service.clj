@@ -2,7 +2,7 @@
   (:require [datomic.api :as datomic]
             [clj-time.core :refer [plus days year month day]]
             [clj-time.local :refer [local-now]]
-            [clj-time.format :refer [formatter]]
+            [clj-time.format :refer [formatter-local]]
             [io.pedestal.service.http :as bootstrap]
             [io.pedestal.service.http.route :as route]
             [io.pedestal.service.http.sse :as sse]
@@ -91,10 +91,24 @@
    :next-n-days
    (fn [msg-data session-id]
      (let [now (local-now)
-           dates (for [delta (range (:n-days msg-data))]
-                   (let [date (plus now (days delta))]
-                     [(year date) (month date) (day date)
-                      (.print (formatter "E, d MMM y") date)]))]
+           dates (reduce (fn [calendar delta]
+                           (let [date (plus now (days delta))
+                                 formatted-date (.print (formatter-local "E, d MMM y") date)
+                                 [y m d :as ymd] ((juxt year month day) date)
+                                 recipes (->> (datomic/q '[:find ?recipe ?name ?url
+                                                           :in $ ?year ?month ?date
+                                                           :where
+                                                           [?recipe :recipe/name ?name]
+                                                           [?recipe :recipe/url ?url]
+                                                           [?menu :menu/recipes ?recipe]
+                                                           [?menu :menu/year ?year]
+                                                           [?menu :menu/month ?month]
+                                                           [?menu :menu/date ?date]]
+                                                         (db) y m d)
+                                              (map (fn [[id name url]] {:id id :name name :url (str url)}))
+                                              (vec))]
+                             (assoc calendar ymd [formatted-date recipes])))
+                         {} (range (:n-days msg-data)))]
        (notify-all "msg" {:type :next-n-days :value dates})))
    })
 

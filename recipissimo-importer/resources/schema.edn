@@ -1,5 +1,6 @@
 [
  ;; ingredient attributes
+
  {:db/id #db/id[:db.part/db]
   :db/ident :ingredient/name
   :db/valueType :db.type/string
@@ -50,4 +51,31 @@
   :db/ident :recipe/ingredients
   :db/valueType :db.type/ref
   :db/cardinality :db.cardinality/many
-  :db.install/_attribute :db.part/db}]
+  :db.install/_attribute :db.part/db}
+
+ ;; menu attributes
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :menu/year
+  :db/valueType :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db.install/_attribute :db.part/db}
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :menu/month
+  :db/valueType :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db.install/_attribute :db.part/db}
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :menu/date
+  :db/valueType :db.type/long
+  :db/cardinality :db.cardinality/one
+  :db.install/_attribute :db.part/db}
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :menu/recipes
+  :db/valueType :db.type/ref
+  :db/cardinality :db.cardinality/many
+  :db.install/_attribute :db.part/db}
+]

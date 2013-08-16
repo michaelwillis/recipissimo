@@ -19,11 +19,10 @@
   {:version 2
    :transform [[:init [:planner] planner-init]
                [:swap [:planner :*] swap-transform]]
-   
    :effect #{[#{[:planner :search-terms]} publish-search-terms :vals]
              [#{[:planner :next-n-days]} publish-next-n-days-request :vals]}
    :emit [{:init init-planner}
-          [#{[:planner :search] [:planner :dates] [:planner] [:planner :next-n-days]}
+          [#{[:planner] [:planner :*] [:planner :dates :*]}
            (app/default-emitter [])]
           ]})
 

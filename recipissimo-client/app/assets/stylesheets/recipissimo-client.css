@@ -36,11 +36,6 @@
 }
 
 #calendar td {
-  width: 14%;
   vertical-align: top;
   height: 5em;
-}
-
-#calendar td .highlight {
-  background-color: yellow;
 }

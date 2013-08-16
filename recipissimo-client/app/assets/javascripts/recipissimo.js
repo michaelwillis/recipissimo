@@ -26,18 +26,28 @@ var addSearchResult = function(recipeId, name, url) {
 var createCalendarRow = function() {
     var tr = jQuery("<tr>");
     jQuery("#calendar").append(tr);
-    return tr;
+    return tr.get(0);
 }
 
-var createCalendarDay = function(tr, year, month, day, text) {
-    tr.append(
-        jQuery("<td>").text(text).droppable({
+var createCalendarDay = function(tr, text, callback) {
+    var ul = jQuery("<ul>")
+    var td = jQuery("<td>")
+        .append(jQuery("<span>").text(text))
+        .append(ul)
+        .droppable({
             hoverClass: "highlight",
             tolerance: "pointer",
             drop: function(event, ui) {
-                alert(ui.draggable.data("recipe-id"));
+                var recipeId = ui.draggable.data("recipe-id");
+                callback(recipeId);
             }
-        })
-    );
+        }); 
+    jQuery(tr).append(td);
+    return ul.get(0);
 }
 
+var addRecipeToCalendar = function(ul, recipeId, name, url) {
+    jQuery(ul).append(
+        jQuery("<li>").append(
+            jQuery("<a>").attr("href", url).text(name)));
+}
