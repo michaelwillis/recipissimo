@@ -110,7 +110,27 @@
                              (assoc calendar ymd [formatted-date recipes])))
                          {} (range (:n-days msg-data)))]
        (notify-all "msg" {:type :next-n-days :value dates})))
-   })
+
+   :plan-meal
+   (fn [msg-data session-id]
+     (let [rid (:rid msg-data)
+           year (:year msg-data)
+           month (:month msg-data)
+           date (:date msg-data)
+           recipe (->> (datomic/q '[:find ?name ?url
+                                    :in $ ?recipe
+                                    :where
+                                    [?recipe :recipe/name ?name]
+                                    [?recipe :recipe/url ?url]]
+                                  (db) rid)
+                       (map (fn [[id name url]] {:id id :name name :url (str url)})))
+           tx [{:db/id (datomic/tempid :db.part/user)
+                :menu/year year
+                :menu/month month
+                :menu/date date
+                :menu/recipes rid}]]
+       (datomic/transact @db-conn tx)
+       (notify-all "msg" {:type :meal-planned :recipe recipe :year year :month month :date date})))})
 
 (defn subscribe
   "Assign a session cookie to this request if one does not
