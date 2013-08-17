@@ -19,23 +19,28 @@
     (js/initSearchBox
      (fn [value] (swap [:planner :search-terms] (string/split value #"\s+"))))))
 
-(defn update-search-results [renderer [_ path _ new-value] input-queue]
-  (js/clearSearchResults)
-  (doseq [{:keys [ id name url]} new-value]
-    (js/addSearchResult id name url)))
-
 (defn render-calendar [renderer [_ path _ new-value] input-queue]
+  (js/clearCalendar)
   (doseq [row (->> new-value keys sort (partition 7) (apply (partial map list)))]
     (let [tr (js/createCalendarRow)]
       (doseq [date row]
         (let [[y m d] date
               [text recipes] (new-value date)
-              callback (fn [rid] (js/alert (str "Added recipe " rid " to " y " " m " " d)))
+              callback (fn [rid]
+                         (p/put-message input-queue
+                                        {msg/type :swap
+                                         msg/topic [:planner :plan-meal]
+                                         :value {:rid rid :year y :month m :date d}}))
               ul (js/createCalendarDay tr text callback)]
           (doseq [{:keys [id name url]} recipes]
             (js/addRecipeToCalendar ul id name url)))))))
 
+(defn update-search-results [renderer [_ path _ new-value] input-queue]
+  (js/clearSearchResults)
+  (doseq [{:keys [ id name url]} new-value]
+    (js/addSearchResult id name url)))
+
 (defn render-config [] 
   [[:node-create [:planner] render-planner]
-   [:value [:planner :dates] render-calendar]
+   [:value [:planner :calendar] render-calendar]
    [:value [:planner :search] update-search-results]])

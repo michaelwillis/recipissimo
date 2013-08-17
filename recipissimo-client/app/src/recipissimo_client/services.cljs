@@ -3,16 +3,22 @@
             [io.pedestal.app.messages :as msg]
             [cljs.reader :as reader]))
 
-(def paths
-  {:next-n-days [:planner :dates]
-   :search-results [:planner :search]})
+(defn single-value-swap-handler [path]
+  (fn [message] {msg/type :swap msg/topic path :value (:value message)}))
+
+(defn handle-meal-planned [{:keys [recipe year month date] :as stuff}]
+  {msg/type :meal-planned msg/topic [:planner :calendar]
+   :value {:recipe recipe :year year :month month :date date}})
+
+(def handlers
+  {:next-n-days (single-value-swap-handler [:planner :calendar])
+   :search-results (single-value-swap-handler [:planner :search])
+   :meal-planned handle-meal-planned})
 
 (defn receive-ss-event [app e]
   (let [message (reader/read-string (.-data e))
-        path (paths (message :type))]
-    (p/put-message (:input app) {msg/type :swap
-                                 msg/topic path
-                                 :value (:value message)})))
+        handler (handlers (message :type))]
+    (p/put-message (:input app) (handler message))))
 
 (defrecord Services [app]
   p/Activity

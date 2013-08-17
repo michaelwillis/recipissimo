@@ -72,7 +72,8 @@
 
 (defn- session-id [] (.toString (java.util.UUID/randomUUID)))
 
-(declare url-for)
+(defn db-result-to-recipe [[id name url]]
+  {:id id :name name :url (str url)})
 
 (def handlers
   {:search
@@ -84,9 +85,9 @@
                                           [[~'?recipe ~'?name]]])
                               (:search-terms msg-data)))
            results (->> (datomic/q query (db))
-                        (map (fn [[id name url]] {:id id :name name :url (str url)}))
+                        (map db-result-to-recipe)
                         (take 15)
-                        (vec))]
+                        vec)]
        (notify-all "msg" {:type :search-results :value results})))
    :next-n-days
    (fn [msg-data session-id]
@@ -105,8 +106,8 @@
                                                            [?menu :menu/month ?month]
                                                            [?menu :menu/date ?date]]
                                                          (db) y m d)
-                                              (map (fn [[id name url]] {:id id :name name :url (str url)}))
-                                              (vec))]
+                                              (map db-result-to-recipe)
+                                              vec)]
                              (assoc calendar ymd [formatted-date recipes])))
                          {} (range (:n-days msg-data)))]
        (notify-all "msg" {:type :next-n-days :value dates})))
@@ -117,13 +118,14 @@
            year (:year msg-data)
            month (:month msg-data)
            date (:date msg-data)
-           recipe (->> (datomic/q '[:find ?name ?url
+           recipe (->> (datomic/q '[:find ?recipe ?name ?url
                                     :in $ ?recipe
                                     :where
                                     [?recipe :recipe/name ?name]
                                     [?recipe :recipe/url ?url]]
                                   (db) rid)
-                       (map (fn [[id name url]] {:id id :name name :url (str url)})))
+                       (map db-result-to-recipe)
+                       first)
            tx [{:db/id (datomic/tempid :db.part/user)
                 :menu/year year
                 :menu/month month
@@ -131,6 +133,8 @@
                 :menu/recipes rid}]]
        (datomic/transact @db-conn tx)
        (notify-all "msg" {:type :meal-planned :recipe recipe :year year :month month :date date})))})
+
+(declare url-for)
 
 (defn subscribe
   "Assign a session cookie to this request if one does not

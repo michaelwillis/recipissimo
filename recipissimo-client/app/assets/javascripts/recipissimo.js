@@ -23,6 +23,10 @@ var addSearchResult = function(recipeId, name, url) {
             .append(jQuery("<a>").attr("href", url).attr("target", "_blank").text(name)));
 }
 
+var clearCalendar = function() {
+    jQuery("#calendar").empty();
+}
+
 var createCalendarRow = function() {
     var tr = jQuery("<tr>");
     jQuery("#calendar").append(tr);
@@ -38,8 +42,8 @@ var createCalendarDay = function(tr, text, callback) {
             hoverClass: "highlight",
             tolerance: "pointer",
             drop: function(event, ui) {
-                var recipeId = ui.draggable.data("recipe-id");
-                callback(recipeId);
+                callback(ui.draggable.data("recipe-id"));
+                ui.draggable.remove();
             }
         }); 
     jQuery(tr).append(td);
