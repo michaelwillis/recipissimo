@@ -50,8 +50,9 @@ var createCalendarDay = function(tr, text, callback) {
     return ul.get(0);
 }
 
-var addRecipeToCalendar = function(ul, recipeId, name, url) {
+var addRecipeToCalendar = function(ul, name, url, deleteCallback) {
     jQuery(ul).append(
-        jQuery("<li>").append(
-            jQuery("<a>").attr("href", url).text(name)));
+        jQuery("<li>")
+            .append(jQuery("<a>").attr("href", url).text(name))
+            .append(jQuery("<img>").attr("src","/delete.png").click(deleteCallback)));
 }

@@ -132,7 +132,28 @@
                 :menu/date date
                 :menu/recipes rid}]]
        (datomic/transact @db-conn tx)
-       (notify-all "msg" {:type :meal-planned :recipe recipe :year year :month month :date date})))})
+       (notify-all "msg" {:type :meal-planned :recipe recipe :year year :month month :date date})))
+
+   :unplan-meal
+   (fn [msg-data session-id]
+     (let [rid (:rid msg-data)
+           year (:year msg-data)
+           month (:month msg-data)
+           date (:date msg-data)
+           query '[:find ?menu
+                   :in $ ?rid ?year ?month ?date
+                   :where
+                   [?menu :menu/year ?year]
+                   [?menu :menu/month ?month]
+                   [?menu :menu/date ?date]
+                   [?menu :menu/recipes ?rid]]
+           planned-recipes (datomic/q query (db) rid year month date)]
+       (notify-all "boomboomboom" {:planned-recipes planned-recipes})
+       (doseq [[planned-recipe] planned-recipes]
+         (do
+           (notify-all "boomboom" {:planned-recipe planned-recipe})
+           (datomic/transact @db-conn [[:db.fn/retractEntity planned-recipe]])))
+       (notify-all "msg" {:type :meal-unplanned :rid rid :year year :month month :date date})))})
 
 (declare url-for)
 

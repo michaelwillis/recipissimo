@@ -11,13 +11,13 @@
 
 (def templates (identity (html-templates/recipissimo-client-templates)))
 
+(defn swap [input-queue topic value]
+  (p/put-message input-queue {msg/type :swap msg/topic topic :value value}))
+
 (defn render-planner [renderer [_ path _] input-queue]
-  (let [template (templates :planner)
-        swap (fn [t v] (p/put-message input-queue {msg/type :swap msg/topic t :value v}))]
-    (dom/append! (dom/by-id "content") (template {}))
-    (js/setTimeout (fn [] (swap [:planner :next-n-days] 14)) 1000)
-    (js/initSearchBox
-     (fn [value] (swap [:planner :search-terms] (string/split value #"\s+"))))))
+  (dom/append! (dom/by-id "content") ((templates :planner) {}))
+  (js/setTimeout #(swap input-queue [:planner :next-n-days] 14) 1000)
+  (js/initSearchBox #(swap input-queue [:planner :search-terms] (string/split % #"\s+"))))
 
 (defn render-calendar [renderer [_ path _ new-value] input-queue]
   (js/clearCalendar)
@@ -26,14 +26,15 @@
       (doseq [date row]
         (let [[y m d] date
               [text recipes] (new-value date)
-              callback (fn [rid]
-                         (p/put-message input-queue
-                                        {msg/type :swap
-                                         msg/topic [:planner :plan-meal]
-                                         :value {:rid rid :year y :month m :date d}}))
+              callback #(swap input-queue
+                              [:planner :plan-meal]
+                              {:rid % :year y :month m :date d})
               ul (js/createCalendarDay tr text callback)]
           (doseq [{:keys [id name url]} recipes]
-            (js/addRecipeToCalendar ul id name url)))))))
+            (let [delete #(swap input-queue
+                                [:planner :unplan-meal]
+                                {:rid id :year y :month m :date d})]
+              (js/addRecipeToCalendar ul name url delete))))))))
 
 (defn update-search-results [renderer [_ path _ new-value] input-queue]
   (js/clearSearchResults)

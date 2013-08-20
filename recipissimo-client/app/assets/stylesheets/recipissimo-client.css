@@ -39,3 +39,8 @@
   vertical-align: top;
   height: 5em;
 }
+
+#calendar img {
+  margin-left: 4px;
+  cursor: pointer;
+}

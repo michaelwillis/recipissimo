@@ -6,14 +6,19 @@
 (defn single-value-swap-handler [path]
   (fn [message] {msg/type :swap msg/topic path :value (:value message)}))
 
-(defn handle-meal-planned [{:keys [recipe year month date] :as stuff}]
+(defn handle-meal-planned [{:keys [recipe year month date]}]
   {msg/type :meal-planned msg/topic [:planner :calendar]
    :value {:recipe recipe :year year :month month :date date}})
+
+(defn handle-meal-unplanned [{:keys [rid year month date]}]
+  {msg/type :meal-unplanned msg/topic [:planner :calendar]
+   :value {:rid rid :year year :month month :date date}})
 
 (def handlers
   {:next-n-days (single-value-swap-handler [:planner :calendar])
    :search-results (single-value-swap-handler [:planner :search])
-   :meal-planned handle-meal-planned})
+   :meal-planned handle-meal-planned
+   :meal-unplanned handle-meal-unplanned})
 
 (defn receive-ss-event [app e]
   (let [message (reader/read-string (.-data e))
