@@ -33,11 +33,13 @@
 
 #calendar {
   clear: both;
+  width: 100%;
 }
 
 #calendar td {
   vertical-align: top;
   height: 5em;
+  width: 50%;
 }
 
 #calendar img {
