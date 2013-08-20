@@ -11,19 +11,15 @@
   (let [ymd ((juxt :year :month :date) (:value message))
         recipe (get-in message [:value :recipe])]
     (if (contains? old-value ymd)
-      (update-in old-value [ymd]
-                 (fn [[date-text recipes]]
-                   [date-text (conj recipes recipe)]))
+      (update-in old-value [ymd 1] #(conj % recipe))
       old-value)))
 
 (defn meal-unplanned [old-value message]
   (let [ymd ((juxt :year :month :date) (:value message))]
     (if (contains? old-value ymd)
-      (update-in old-value [ymd]
-                 (fn [[date-text recipes]]
-                   [date-text (->> recipe
-                                   (filter #(not= (:id val)
-                                                  (-> message :value :rid))))]))
+      (update-in old-value [ymd 1]
+                 (fn [recipes]
+                   (->> recipes (filter #(not= (:id val) (-> message :value :rid))))))
       old-value)))
 
 (defn publish-search-terms [[search-terms]]

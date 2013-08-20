@@ -148,11 +148,8 @@
                    [?menu :menu/date ?date]
                    [?menu :menu/recipes ?rid]]
            planned-recipes (datomic/q query (db) rid year month date)]
-       (notify-all "boomboomboom" {:planned-recipes planned-recipes})
        (doseq [[planned-recipe] planned-recipes]
-         (do
-           (notify-all "boomboom" {:planned-recipe planned-recipe})
-           (datomic/transact @db-conn [[:db.fn/retractEntity planned-recipe]])))
+         (datomic/transact @db-conn [[:db.fn/retractEntity planned-recipe]]))
        (notify-all "msg" {:type :meal-unplanned :rid rid :year year :month month :date date})))})
 
 (declare url-for)
