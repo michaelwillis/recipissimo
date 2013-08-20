@@ -88,7 +88,7 @@
                         (map db-result-to-recipe)
                         (take 15)
                         vec)]
-       (notify-all "msg" {:type :search-results :value results})))
+       (notify session-id "msg" {:type :search-results :value results})))
    :next-n-days
    (fn [msg-data session-id]
      (let [now (local-now)

@@ -19,7 +19,7 @@
     (if (contains? old-value ymd)
       (update-in old-value [ymd 1]
                  (fn [recipes]
-                   (->> recipes (filter #(not= (:id val) (-> message :value :rid))))))
+                   (->> recipes (filter #(not= (:id %) (-> message :value :rid))))))
       old-value)))
 
 (defn publish-search-terms [[search-terms]]
