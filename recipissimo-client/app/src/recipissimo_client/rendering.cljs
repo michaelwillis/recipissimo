@@ -16,8 +16,15 @@
 
 (defn render-planner [renderer [_ path _] input-queue]
   (dom/append! (dom/by-id "content") ((templates :planner) {}))
-  (js/setTimeout #(swap input-queue [:planner :next-n-days] 14) 1000)
-  (js/initSearchBox #(swap input-queue [:planner :search-terms] (string/split % #"\s+"))))
+  (js/setTimeout #(swap input-queue [:planner :next-n-days] 14) 100)
+  (js/initSearchBox #(swap input-queue [:planner :search-terms] (string/split % #"\s+")))
+  (js/initCreateShoppingListButton
+   #(p/put-message input-queue {msg/topic msg/app-model
+                                msg/type :set-focus
+                                :name :shopping-list})))
+
+(defn remove-planner [renderer [_ path _] input-queue]
+  (dom/destroy! (dom/by-id "planner")))
 
 (defn render-calendar [renderer [_ path _ new-value] input-queue]
   (js/clearCalendar)
@@ -36,12 +43,13 @@
                                 {:rid id :year y :month m :date d})]
               (js/addRecipeToCalendar ul name url delete))))))))
 
-(defn update-search-results [renderer [_ path _ new-value] input-queue]
+(defn render-search-results [renderer [_ path _ new-value] input-queue]
   (js/clearSearchResults)
   (doseq [{:keys [ id name url]} new-value]
     (js/addSearchResult id name url)))
 
 (defn render-config [] 
   [[:node-create [:planner] render-planner]
+   [:node-destroy [:planner] remove-planner]
    [:value [:planner :calendar] render-calendar]
-   [:value [:planner :search] update-search-results]])
+   [:value [:planner :search] render-search-results]])

@@ -9,11 +9,11 @@ var initSearchBox = function(callback) {
             callback(jQuery("#recipe-search-text").val());
         }, 500);
     });
-}
+};
 
 var clearSearchResults = function() {
     jQuery("#search-results").empty();
-}
+};
 
 var addSearchResult = function(recipeId, name, url) {
     jQuery("#search-results").append(
@@ -21,17 +21,17 @@ var addSearchResult = function(recipeId, name, url) {
             .draggable({revert:true})
             .data("recipe-id", recipeId)
             .append(jQuery("<a>").attr("href", url).attr("target", "_blank").text(name)));
-}
+};
 
 var clearCalendar = function() {
     jQuery("#calendar").empty();
-}
+};
 
 var createCalendarRow = function() {
     var tr = jQuery("<tr>");
     jQuery("#calendar").append(tr);
     return tr.get(0);
-}
+};
 
 var createCalendarDay = function(tr, text, callback) {
     var ul = jQuery("<ul>")
@@ -48,11 +48,16 @@ var createCalendarDay = function(tr, text, callback) {
         }); 
     jQuery(tr).append(td);
     return ul.get(0);
-}
+};
 
 var addRecipeToCalendar = function(ul, name, url, deleteCallback) {
     jQuery(ul).append(
         jQuery("<li>")
             .append(jQuery("<a>").attr("href", url).text(name))
             .append(jQuery("<img>").attr("src","/delete.png").click(deleteCallback)));
-}
+};
+
+var initCreateShoppingListButton = function(callback) {
+    jQuery("#create-shopping-list-button").click(callback);
+};
+

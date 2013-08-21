@@ -40,8 +40,7 @@
 
 (def recipissimo-app
   {:version 2
-   :transform [[:init [:planner] planner-init]
-               [:swap [:planner :*] swap-transform]
+   :transform [[:swap [:planner :*] swap-transform]
                [:meal-planned [:planner :calendar] meal-planned]
                [:meal-unplanned [:planner :calendar] meal-unplanned]]
    :effect #{[#{[:planner :search-terms]} publish-search-terms :vals]
@@ -52,5 +51,8 @@
    :emit [{:init init-planner}
           [#{[:planner] [:planner :*]}
            (app/default-emitter [])]
-          ]})
+          ]
+   :focus {:planner [[:planner]]
+           :shopping-list [[:shopping-list]]
+           :default :planner}})
 
