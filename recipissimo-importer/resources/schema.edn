@@ -111,10 +111,12 @@
                                    [?c :ingredient-category/name ?name]]
                                  (datomic.api/q db category-name)
                                  (ffirst))
-
-                             tx [[:db/add new-category
-                                  :ingredient-category/ingredient-names
-                                  ingredient-name]]
+                             tx []
+                             tx (if new-category
+                                  (conj tx [:db/add new-category
+                                            :ingredient-category/ingredient-names
+                                            ingredient-name])
+                                  tx)
                              tx (if prior-category
                                   (conj tx [:db/retract prior-category
                                             :ingredient-category/ingredient-names
