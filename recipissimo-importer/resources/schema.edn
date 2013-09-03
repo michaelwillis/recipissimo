@@ -92,4 +92,32 @@
   :db/valueType :db.type/ref
   :db/cardinality :db.cardinality/many
   :db.install/_attribute :db.part/db}
-]
+
+ ;; transaction function
+
+ {:db/id #db/id[:db.part/user]
+  :db/ident :set-ingredient-category
+  :db/doc "Sets ingredient category and removes from prior category if one exists"
+  :db/fn #db/fn {:lang "clojure"
+                 :params [db ingredient-name category-name]
+                 :code (let [prior-category
+                             (-> '[:find ?c :in $ ?ingredient-name :where
+                                   [?c :ingredient-category/ingredient-names ?ingredient-name]]
+                                 (datomic.api/q db ingredient-name)
+                                 (ffirst))
+
+                             new-category
+                             (-> '[:find ?c :in $ ?name :where
+                                   [?c :ingredient-category/name ?name]]
+                                 (datomic.api/q db category-name)
+                                 (ffirst))
+
+                             tx [[:db/add new-category
+                                  :ingredient-category/ingredient-names
+                                  ingredient-name]]
+                             tx (if prior-category
+                                  (conj tx [:db/retract prior-category
+                                            :ingredient-category/ingredient-names
+                                            ingredient-name])
+                                  tx)]
+                         tx)}}]

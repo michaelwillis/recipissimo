@@ -67,7 +67,7 @@
           delete #(swap input-queue [:shopping-list :delete-category] category)
           category-ul (js/renderCategory category drop-ingredient delete)]
       (doseq [{:keys [name raw-text]} ingredients]
-        (js/addIngredientToCategory category-ul raw-text)))))
+        (js/addIngredientToCategory category-ul name raw-text)))))
 
 (defn render-config [] 
   [[:node-create [:planner] render-planner]

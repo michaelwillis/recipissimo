@@ -198,7 +198,13 @@
            category (ffirst (datomic/q query (db) name))]
        (datomic/transact @db-conn [[:db.fn/retractEntity category]])
        (notify-all "msg" {:type :category-deleted :name name})))
-   })
+
+   :update-category
+   (fn [{:keys [category ingredient]} session-id]
+     (datomic/transact @db-conn [[:set-ingredient-category ingredient category]])
+     (notify-all "msg" {:type :category-updated
+                        :ingredient ingredient
+                        :category category}))})
 
 (declare url-for)
 

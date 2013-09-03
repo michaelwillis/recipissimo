@@ -190,4 +190,3 @@
          :description "These muffins are inspired by a new favorite snack of mine: A handful of roasted pistachios and chocolate chips. I really love the flavo"
          :image "http://cdn.naturallyella.com/files/2013/03/IMG_6411-2-200x300.jpg"
          :url "http://naturallyella.com/2013/03/20/pistachio-and-chocolate-chip-muffins/"}))
-

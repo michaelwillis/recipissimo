@@ -29,7 +29,8 @@
 
 (def numeric #"[\d¼½¾⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]+")
 
-(def numeric? (partial re-find numeric))
+(defn numeric? [text]
+  (re-find numeric text))
 
 (defn ingredient? [line]
   (let [words (split-on-whitespace line)]
@@ -63,25 +64,30 @@
         (when (not-empty words) (string/join " " words))))))
 
 (defn parse-recipe [recipe]
-  (let [parsed (json/parse-string recipe)]
-    {:name (parsed "name")
-     :description (parsed "description")
-     :image (parsed "image")
-     :url (parsed "url")
-     :ingredients (vec (->> (parsed "ingredients")
-                            (string/split-lines)
-                            (map string/trim)
-                            (map (fn [i] [i (parse-ingredient i)]))
-                            (filter (comp not nil? second))))}))
+  (let [parsed (json/parse-string recipe)
+        ingredient-text (parsed "ingredients")]
+    (when ingredient-text
+      (let [ingredients (vec (->> (parsed "ingredients")
+                                  (string/split-lines)
+                                  (map string/trim)
+                                  (map (fn [i] [i (parse-ingredient i)]))
+                                  (filter (comp not nil? second))))
+            recipe {:name (parsed "name")
+                    :description (parsed "description")
+                    :image (parsed "image")
+                    :url (parsed "url")
+                    :ingredients ingredients}]
+        (when (not-any? nil? (vals recipe)) recipe)))))
 
 (defn parse-recipe-file
   "Parses each line in the given file as a recipe, passing each recipe to the handler function"
   [filename handler]
   (with-open [reader (clojure.java.io/reader filename)]
     (doseq [recipe-json (line-seq reader)]
-      (let [recipe (parse-recipe recipe-json)]
-        (when (not-any? nil? (vals recipe))
-          (handler recipe))))))
+      (try
+        (if-let [recipe (parse-recipe recipe-json)]
+          (handler recipe))
+        (catch Throwable t (prn "Caught " (.getMessage t) " trying to parse " recipe-json))))))
 
 (defn init-db
   "Creates a datomic database and sets up the schema"
@@ -96,12 +102,12 @@
   (let [conn (datomic/connect datomic-uri)]
     (parse-recipe-file filename
      (fn [recipe]
-       (let [tx (map (fn [[raw-text name]]
-                       (let [id (datomic/tempid :db.part/user)]
-                         {:db/id id
-                          :ingredient/name name
-                          :ingredient/raw-text raw-text}))
-                     (:ingredients recipe))
+       (let [tx (->> recipe :ingredients
+                     (map (fn [[raw-text name]]
+                            (let [id (datomic/tempid :db.part/user)]
+                              {:db/id id
+                               :ingredient/name name
+                               :ingredient/raw-text raw-text}))))
              ingredient-ids (set (map :db/id tx))
              tx (concat tx [{:db/id (datomic/tempid :db.part/user)
                              :recipe/name (:name recipe)

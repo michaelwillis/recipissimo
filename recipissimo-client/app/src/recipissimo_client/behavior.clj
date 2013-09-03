@@ -36,6 +36,18 @@
         (update-in [:ingredients "other"] concat ingredients)
         (update-in [:ingredients] dissoc name))))
 
+(defn category-updated [shopping-list {:keys [ingredient category]}]
+  (let [ingredients (mapcat (fn [[_ category-ingredients]]
+                              (filter #(= (% :name) ingredient) category-ingredients))
+                            (shopping-list :ingredients))]
+    (reduce (fn [shopping-list ingredient]
+              (-> shopping-list
+                  ;; remove from prior category
+                  (update-in [:ingredients (ingredient :category)]
+                             (partial filter (fn [i] (not= i ingredient))))
+                  (update-in [:ingredients category] conj ingredient)))
+            shopping-list ingredients)))
+
 (defn publish-search-terms [[search-terms]]
   (when search-terms
     [{:type :search :search-terms search-terms}]))
@@ -65,7 +77,6 @@
     [{:type :delete-category :name deleted-category-name}]))
 
 (defn publish-update-category [[{:keys [category ingredient]}]]
-  (js/alert (str "update category |" category "|" ingredient "|"))
   (when (and category ingredient)
     [{:type :update-category :category category :ingredient ingredient}]))
 
@@ -77,7 +88,9 @@
                [:meal-planned [:planner :calendar] meal-planned]
                [:meal-unplanned [:planner :calendar] meal-unplanned]
                [:new-category [:shopping-list] new-category]
-               [:category-deleted [:shopping-list] category-deleted]]
+               [:category-deleted [:shopping-list] category-deleted]
+               [:category-updated [:shopping-list] category-updated]
+               ]
    :effect #{[#{[:planner :search-terms]} publish-search-terms :vals]
              [#{[:planner :next-n-days]} publish-next-n-days-request :vals]
              [#{[:planner :plan-meal]} publish-plan-meal :vals]

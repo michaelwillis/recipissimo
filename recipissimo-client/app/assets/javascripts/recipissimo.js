@@ -75,11 +75,11 @@ var clearIngredients = function() {
 
 var renderCategory = function(name, dropIngredientCallback, deleteCallback) {
     var ul = jQuery("<ul>");
-    var fieldSet = jQuery("<fieldset>")        
+    var fieldSet = jQuery("<fieldset>")
         .droppable({
             drop: function(event, ui) {
+                dropIngredientCallback(ui.draggable.data("ingredient-name"));
                 ui.draggable.remove();
-                dropIngredientCallback(ui.draggable.text());
             }
         });
 
@@ -95,10 +95,10 @@ var renderCategory = function(name, dropIngredientCallback, deleteCallback) {
     return ul;
 };
 
-var addIngredientToCategory = function(category, name) {
-    category.append(
-        jQuery("<li>")
-            .draggable({revert:true})
-            .text(name))
+var addIngredientToCategory = function(category, name, rawText) {
+    var li = jQuery("<li>")
+        .draggable({revert:true})
+        .data("ingredient-name", name)
+        .text(rawText);
+    category.append(li);
 };
-    

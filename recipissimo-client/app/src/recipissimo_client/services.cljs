@@ -20,6 +20,12 @@
 (defn handle-category-deleted [{:keys [name]}]
   {msg/type :category-deleted msg/topic [:shopping-list] :name name})
 
+(defn handle-category-updated [{:keys [category ingredient]}]
+  {msg/type :category-updated
+   msg/topic [:shopping-list]
+   :category category
+   :ingredient ingredient})
+
 (def handlers
   {:next-n-days (single-value-swap-handler [:planner :calendar])
    :search-results (single-value-swap-handler [:planner :search])
@@ -28,7 +34,7 @@
    :shopping-list (single-value-swap-handler [:shopping-list :ingredients])
    :new-category handle-new-category
    :category-deleted handle-category-deleted
-   })
+   :category-updated handle-category-updated})
 
 (defn receive-ss-event [app e]
   (let [message (reader/read-string (.-data e))
