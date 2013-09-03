@@ -31,6 +31,19 @@
   background:#e4ebf0 url("/handle.png") no-repeat scroll 0 0;
 }
 
+#categories ul {
+  list-style:none;
+}
+
+#categories li {
+  cursor: move;
+  margin: 4px;
+  padding: 0 8px 0 16px;
+  border-radius: 8px;
+  transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;
+  background:#e4ebf0 url("/handle.png") no-repeat scroll 0 0;
+}
+
 #calendar {
   clear: both;
   width: 100%;
@@ -42,7 +55,21 @@
   width: 50%;
 }
 
-#calendar img {
+#calendar img, #categories img {
   margin-left: 4px;
   cursor: pointer;
+}
+
+#add-category-name {
+  margin: 0 9px;
+}
+
+#shopping-list fieldset {
+  float: left;
+  padding: 0 9px;
+  width: 45%;
+}
+
+#shopping-list legend {
+  margin: 0;
 }

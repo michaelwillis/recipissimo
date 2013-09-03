@@ -75,6 +75,14 @@
 (defn db-result-to-recipe [[id name url]]
   {:id id :name name :url (str url)})
 
+(defn find-category [db ingredient-name]
+  (let [query
+        '[:find ?category-name :in $ ?ingredient-name :where
+          [?category :ingredient-category/name ?category-name]
+          [?category :ingredient-category/ingredient-names ?ingredient-name]]
+        results (datomic/q query db ingredient-name)]
+    (if (seq results) (ffirst results) "other")))
+
 (def handlers
   {:search
    (fn [msg-data session-id]
@@ -110,15 +118,11 @@
                                               vec)]
                              (assoc calendar ymd [formatted-date recipes])))
                          {} (range (:n-days msg-data)))]
-       (notify-all "msg" {:type :next-n-days :value dates})))
+       (notify session-id "msg" {:type :next-n-days :value dates})))
 
    :plan-meal
-   (fn [msg-data session-id]
-     (let [rid (:rid msg-data)
-           year (:year msg-data)
-           month (:month msg-data)
-           date (:date msg-data)
-           recipe (->> (datomic/q '[:find ?recipe ?name ?url
+   (fn [{:keys [rid year month date]} session-id]
+     (let [recipe (->> (datomic/q '[:find ?recipe ?name ?url
                                     :in $ ?recipe
                                     :where
                                     [?recipe :recipe/name ?name]
@@ -135,12 +139,8 @@
        (notify-all "msg" {:type :meal-planned :recipe recipe :year year :month month :date date})))
 
    :unplan-meal
-   (fn [msg-data session-id]
-     (let [rid (:rid msg-data)
-           year (:year msg-data)
-           month (:month msg-data)
-           date (:date msg-data)
-           query '[:find ?menu
+   (fn [{:keys [rid year month date]} session-id]
+     (let [query '[:find ?menu
                    :in $ ?rid ?year ?month ?date
                    :where
                    [?menu :menu/year ?year]
@@ -150,7 +150,55 @@
            planned-recipes (datomic/q query (db) rid year month date)]
        (doseq [[planned-recipe] planned-recipes]
          (datomic/transact @db-conn [[:db.fn/retractEntity planned-recipe]]))
-       (notify-all "msg" {:type :meal-unplanned :rid rid :year year :month month :date date})))})
+       (notify-all "msg" {:type :meal-unplanned :rid rid :year year :month month :date date})))
+
+   :shopping-list
+   (fn [msg-data session-id]
+     (let [categories 
+           (apply hash-map
+                  (mapcat list
+                          (-> '[:find ?name :where [?category :ingredient-category/name ?name]]
+                              (datomic/q (db))
+                              seq flatten)
+                          (repeat [])))]
+       (notify session-id
+        "msg" {:type :shopping-list
+               :value (->> (:dates msg-data)
+                           (mapcat (fn [[y m d]]
+                                     (-> '[:find ?name ?raw-text ?category 
+                                           :in $ ?y ?m ?d 
+                                           :where
+                                           [?menu :menu/year ?y]
+                                           [?menu :menu/month ?m]
+                                           [?menu :menu/date ?d]
+                                           [?menu :menu/recipes ?recipe]
+                                           [?recipe :recipe/ingredients ?ingredient]
+                                           [?ingredient :ingredient/name ?name]
+                                           [?ingredient :ingredient/raw-text ?raw-text]
+                                           [(recipissimo-service.service/find-category $ ?name) ?category]]
+                                         (datomic/q (db) y m d))))
+                           (map (fn [[name raw-text category]]
+                                  {:name name
+                                   :raw-text raw-text
+                                   :category category}))
+                           (group-by :category)
+                           (merge categories))})))
+
+   :new-category
+   (fn [{:keys [name]} session-id]
+     (datomic/transact @db-conn
+                       [{:db/id (datomic/tempid :db.part/user)
+                         :ingredient-category/name name}])
+     (notify-all "msg" {:type :new-category :name name}))
+
+   :delete-category
+   (fn [{:keys [name]} session-id]
+     (let [query '[:find ?c :in $ ?name :where
+                   [?c :ingredient-category/name ?name]]
+           category (ffirst (datomic/q query (db) name))]
+       (datomic/transact @db-conn [[:db.fn/retractEntity category]])
+       (notify-all "msg" {:type :category-deleted :name name})))
+   })
 
 (declare url-for)
 
@@ -178,7 +226,7 @@
   (let [session-id (or (session-from-request request)
                        (session-id))
         handler (handlers (:type msg-data))]
-    (notify-all "effect" { :session-id session-id :msg msg-data})
+    (notify-all "effect" {:session-id session-id :msg msg-data :handler handler})
     (handler msg-data session-id))
   (ring-resp/response ""))
 

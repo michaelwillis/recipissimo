@@ -11,8 +11,7 @@
 (defn create-app [render-config]
   (let [app (app/build behavior/recipissimo-app)
         render-fn (push-render/renderer "content" render-config render/log-fn)
-        app-model (render/consume-app-model app render-fn)
-        weeks (partition 7 (concat [30] (range 1 32) (range 1 4)))]
+        app-model (render/consume-app-model app render-fn)]
     (app/begin app)
     {:app app :app-model app-model}))
 

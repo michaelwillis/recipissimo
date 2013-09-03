@@ -14,11 +14,21 @@
   {msg/type :meal-unplanned msg/topic [:planner :calendar]
    :value {:rid rid :year year :month month :date date}})
 
+(defn handle-new-category [{:keys [name]}]
+  {msg/type :new-category msg/topic [:shopping-list] :name name})
+
+(defn handle-category-deleted [{:keys [name]}]
+  {msg/type :category-deleted msg/topic [:shopping-list] :name name})
+
 (def handlers
   {:next-n-days (single-value-swap-handler [:planner :calendar])
    :search-results (single-value-swap-handler [:planner :search])
    :meal-planned handle-meal-planned
-   :meal-unplanned handle-meal-unplanned})
+   :meal-unplanned handle-meal-unplanned
+   :shopping-list (single-value-swap-handler [:shopping-list :ingredients])
+   :new-category handle-new-category
+   :category-deleted handle-category-deleted
+   })
 
 (defn receive-ss-event [app e]
   (let [message (reader/read-string (.-data e))

@@ -61,3 +61,44 @@ var initCreateShoppingListButton = function(callback) {
     jQuery("#create-shopping-list-button").click(callback);
 };
 
+var initShoppingList = function(addCategoryCallback) {
+    jQuery("#add-category-button").click(
+        function() { 
+            addCategoryCallback(jQuery("#add-category-name").val());
+        }
+    );
+};
+
+var clearIngredients = function() {
+    jQuery("#categories").empty();
+};
+
+var renderCategory = function(name, dropIngredientCallback, deleteCallback) {
+    var ul = jQuery("<ul>");
+    var fieldSet = jQuery("<fieldset>")        
+        .droppable({
+            drop: function(event, ui) {
+                ui.draggable.remove();
+                dropIngredientCallback(ui.draggable.text());
+            }
+        });
+
+    var legend = jQuery("<legend>")
+        .append(jQuery("<span>").text(name));
+
+    if (name != "other") {
+        legend.append(jQuery("<img>").attr("src","/delete.png").click(deleteCallback));
+    }
+
+    fieldSet.append(legend).append(ul);
+    jQuery("#categories").append(fieldSet);
+    return ul;
+};
+
+var addIngredientToCategory = function(category, name) {
+    category.append(
+        jQuery("<li>")
+            .draggable({revert:true})
+            .text(name))
+};
+    
