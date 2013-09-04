@@ -7,7 +7,6 @@ A menu and shopping list creator built on [Pedestal](http://pedestal.io/), [Dato
 ### Get Datomic, start the transactor
 
 ```bash
-# Check 
 DATOMIC_VERSION=0.8.4143
 wget http://downloads.datomic.com/$DATOMIC_VERSION/datomic-free-$DATOMIC_VERSION.zip
 unzip datomic-free-$DATOMIC_VERSION.zip
@@ -69,25 +68,21 @@ In the REPL:
 
 Navigate to:
 
-http://localhost:3000/recipissimo-client.html
+(http://localhost:3000/recipissimo-client.html)
 
 ### Calendar View
 
-(//github.com/willismichael/recipissimo/raw/master/screenshots/calendar-view.png)
+(screenshots/calendar-view.png)
 
 This is the first view that you will see in the app.  The two-week calendar may take a few seconds to appear the first time you view it after the app is started.
 
-Use the top-right search to find recipes.  If there are any matches, up to 15 will be presented.
-
-OpenRecipes pulls information from a variety of cooking blogs.  Click a recipe link to view the original blog post for more details.
-
-Drag and drop recipes from the search results to the calendar.  Click the X to delete an unwanted recipe from the calendar.
+Use the top-right search to find recipes.  If there are any matches, up to 15 will be presented.  Click a recipe link to view the original blog post about the given recipe.  Drag and drop recipes from the search results to the calendar.  Click the X to delete an unwanted recipe from the calendar.
 
 Click "Create Shopping List" to move on to the next view.
 
 ### Shopping List View
 
-(//github.com/willismichael/recipissimo/raw/master/screenshots/shopping-list-view.png)
+(screenshots/shopping-list-view.png)
 
 This shows the ingredients needed to make the recipes that were put on the calendar.  It allows you to create categories and then drag and drop ingredients to categorize them.  The app will remember ingredient categories for future use.  Print this page to do your shopping.
 
