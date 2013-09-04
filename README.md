@@ -66,9 +66,9 @@ In the REPL:
 (start)
 ```
 
-Navigate to:
+## Using the App
 
-[http://localhost:3000/recipissimo-client.html](http://localhost:3000/recipissimo-client.html)
+Navigate to: [http://localhost:3000/recipissimo-client.html](http://localhost:3000/recipissimo-client.html)
 
 ### Calendar View
 
