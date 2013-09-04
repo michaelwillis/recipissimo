@@ -68,11 +68,11 @@ In the REPL:
 
 Navigate to:
 
-(http://localhost:3000/recipissimo-client.html)
+[http://localhost:3000/recipissimo-client.html](http://localhost:3000/recipissimo-client.html)
 
 ### Calendar View
 
-(screenshots/calendar-view.png)
+[Calendar View](screenshots/calendar-view.png)
 
 This is the first view that you will see in the app.  The two-week calendar may take a few seconds to appear the first time you view it after the app is started.
 
@@ -82,7 +82,7 @@ Click "Create Shopping List" to move on to the next view.
 
 ### Shopping List View
 
-(screenshots/shopping-list-view.png)
+[Shopping List View](screenshots/shopping-list-view.png)
 
 This shows the ingredients needed to make the recipes that were put on the calendar.  It allows you to create categories and then drag and drop ingredients to categorize them.  The app will remember ingredient categories for future use.  Print this page to do your shopping.
 
