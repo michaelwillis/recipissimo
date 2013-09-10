@@ -45,7 +45,8 @@
                   ;; remove from prior category
                   (update-in [:ingredients (ingredient :category)]
                              (partial filter (fn [i] (not= i ingredient))))
-                  (update-in [:ingredients category] conj ingredient)))
+                  (update-in [:ingredients category] conj
+                             (assoc ingredient :category category))))
             shopping-list ingredients)))
 
 (defn publish-search-terms [[search-terms]]
